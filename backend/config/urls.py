@@ -39,8 +39,8 @@ urlpatterns = [
         name="redoc",
     ),
 
-    # ── API v1 (placeholder — will be populated in later rounds) ──
-    # path("api/v1/", include("config.api_urls")),
+    # ── API v1 ─────────────────────────────────────
+    path("api/v1/", include("config.api_urls")),
 ]
 
 # ── Serve media files during development ──────────
