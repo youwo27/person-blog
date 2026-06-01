@@ -98,6 +98,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Custom User model
 AUTH_USER_MODEL = "accounts.User"
 
+# Password reset token lifetime (seconds)
+PASSWORD_RESET_TIMEOUT = 3600  # 1 hour
+
 # ═══════════════════════════════════════════════════
 # Database
 # ═══════════════════════════════════════════════════

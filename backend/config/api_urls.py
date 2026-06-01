@@ -25,4 +25,5 @@ router.register(r"subscribers", SubscriberViewSet, basename="subscriber")
 
 urlpatterns = [
     path("", include(router.urls)),
+    path("auth/", include("apps.accounts.urls")),
 ]
