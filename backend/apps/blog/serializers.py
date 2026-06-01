@@ -9,6 +9,8 @@ Pattern:
 
 from rest_framework import serializers
 
+from apps.media_library.models import Media
+
 from .models import Category, Post, SiteSetting, Tag
 
 
@@ -23,8 +25,14 @@ class AuthorBriefSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     username = serializers.CharField(read_only=True)
     display_name = serializers.CharField(read_only=True)
-    avatar = serializers.ImageField(read_only=True)
+    avatar_url = serializers.SerializerMethodField()
     role = serializers.CharField(read_only=True)
+
+    def get_avatar_url(self, obj):
+        try:
+            return obj.avatar.url if obj.avatar else ""
+        except Exception:
+            return ""
 
 
 class CategoryBriefSerializer(serializers.ModelSerializer):
@@ -46,7 +54,6 @@ class CategoryTreeSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "slug", "description", "order", "is_active", "post_count", "children"]
 
     def get_children(self, obj):
-        """Return active child categories recursively."""
         children = obj.children_active.all()
         if children.exists():
             return CategoryTreeSerializer(children, many=True).data
@@ -98,7 +105,7 @@ class PostListSerializer(serializers.ModelSerializer):
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
-    """Full post detail including content, SEO, and navigation."""
+    """Full post detail including raw content, SEO, and navigation."""
 
     author = AuthorBriefSerializer(read_only=True)
     category = CategoryBriefSerializer(read_only=True)
@@ -114,6 +121,7 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "slug",
+            "content",
             "content_html",
             "excerpt",
             "cover_image_url",
@@ -150,13 +158,18 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
-    """Serializer for creating and updating posts."""
+    """Serializer for creating and updating posts.
+
+    - category_id / tag_ids / cover_image_id: write-only FK/M2M fields
+    - Auto-generates slug and content_html in model save()
+    """
 
     category_id = serializers.PrimaryKeyRelatedField(
         queryset=Category.objects.filter(is_active=True),
         source="category",
         write_only=True,
         required=False,
+        allow_null=True,
     )
     tag_ids = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
@@ -166,7 +179,7 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
         required=False,
     )
     cover_image_id = serializers.PrimaryKeyRelatedField(
-        queryset=Post._meta.get_field("cover_image").remote_field.model.objects.all(),
+        queryset=Media.objects.all(),
         source="cover_image",
         write_only=True,
         required=False,
@@ -189,15 +202,44 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
             "meta_title",
             "meta_description",
         ]
+        extra_kwargs = {
+            "slug": {"required": False},
+        }
+
+    def validate_title(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Title cannot be empty.")
+        return value.strip()
+
+    def validate_content(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Content cannot be empty.")
+        return value
 
     def validate(self, data):
-        """Validate scheduled posts have a scheduled_at date."""
-        status = data.get("status", self.instance.status if self.instance else None)
-        if status == Post.Status.SCHEDULED and not data.get("scheduled_at"):
-            if not self.instance or not self.instance.scheduled_at:
+        """Validate business rules."""
+        status = data.get("status", self.instance.status if self.instance else Post.Status.DRAFT)
+        scheduled_at = data.get("scheduled_at")
+
+        # Scheduled posts must have a future date
+        if status == Post.Status.SCHEDULED:
+            if not scheduled_at and (not self.instance or not self.instance.scheduled_at):
                 raise serializers.ValidationError(
-                    {"scheduled_at": "Scheduled posts must have a scheduled_at date."}
+                    {"scheduled_at": "Scheduled posts must have a scheduled_at date in the future."}
                 )
+
+        # Prevent changing status to PUBLISHED if slug already exists as published
+        if status == Post.Status.PUBLISHED:
+            slug = data.get("slug", self.instance.slug if self.instance else None)
+            if slug:
+                existing = Post.objects.filter(slug=slug, status=Post.Status.PUBLISHED)
+                if self.instance:
+                    existing = existing.exclude(pk=self.instance.pk)
+                if existing.exists():
+                    raise serializers.ValidationError(
+                        {"slug": "A published post with this slug already exists."}
+                    )
+
         return data
 
 
@@ -207,12 +249,41 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Flat category view — for create/update."""
+    """Category create/update — flat representation."""
+
+    parent_id = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.filter(is_active=True),
+        source="parent",
+        write_only=True,
+        required=False,
+        allow_null=True,
+    )
+    post_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Category
-        fields = ["id", "name", "slug", "description", "parent", "order", "is_active", "created_at"]
-        read_only_fields = ["created_at"]
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "parent",
+            "parent_id",
+            "order",
+            "is_active",
+            "post_count",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at", "post_count"]
+        extra_kwargs = {
+            "slug": {"required": False},
+        }
+
+    def validate(self, data):
+        """Prevent a category from being its own parent."""
+        if self.instance and data.get("parent") == self.instance:
+            raise serializers.ValidationError({"parent": "A category cannot be its own parent."})
+        return data
 
 
 # ═══════════════════════════════════════════════════
@@ -221,14 +292,17 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Tag serializer with post count."""
+    """Tag serializer with post count — for create/update/detail."""
 
     post_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Tag
         fields = ["id", "name", "slug", "post_count", "created_at"]
-        read_only_fields = ["created_at"]
+        read_only_fields = ["id", "created_at", "post_count"]
+        extra_kwargs = {
+            "slug": {"required": False},
+        }
 
 
 # ═══════════════════════════════════════════════════
