@@ -1,0 +1,8 @@
+# ──────────────────────────────────────────────────
+# Person Blog — Production Dependencies
+# ──────────────────────────────────────────────────
+-r base.txt
+
+# ── Production-specific additions ────────────────
+# Most production dependencies are already in base.txt.
+# Add production-only packages here (e.g., New Relic, Datadog).

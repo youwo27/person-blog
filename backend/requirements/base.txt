@@ -1,0 +1,56 @@
+# ──────────────────────────────────────────────────
+# Person Blog — Base Dependencies
+# ──────────────────────────────────────────────────
+
+# ── Django Core ──────────────────────────────────
+django>=5.0,<5.2
+
+# ── Django REST Framework ────────────────────────
+djangorestframework>=3.15,<4.0
+django-filter>=24.0
+django-cors-headers>=4.5
+djangorestframework-simplejwt>=5.4
+
+# ── API Documentation ────────────────────────────
+drf-spectacular>=0.28
+
+# ── Database ─────────────────────────────────────
+psycopg[binary]>=3.2
+
+# ── Environment & Configuration ──────────────────
+django-environ>=0.11
+
+# ── Redis & Cache ────────────────────────────────
+redis>=5.2
+django-redis>=5.4
+hiredis>=2.4
+
+# ── Celery (Async Tasks) ─────────────────────────
+celery[redis]>=5.4
+django-celery-results>=2.5
+django-celery-beat>=2.7
+
+# ── Image Processing ─────────────────────────────
+pillow>=10.4
+
+# ── Object Storage (S3 / MinIO) ─────────────────
+django-storages[s3]>=1.14
+
+# ── Error Monitoring ─────────────────────────────
+sentry-sdk[django]>=2.14
+
+# ── ASGI Server (Production) ─────────────────────
+gunicorn>=22.0
+uvicorn[standard]>=0.30
+
+# ── Static Files (Production) ────────────────────
+whitenoise>=6.7
+
+# ── Structured Logging ───────────────────────────
+python-json-logger>=2.0
+
+# ── Security Headers ─────────────────────────────
+django-csp>=3.8
+
+# ── Utilities ────────────────────────────────────
+bleach>=6.1

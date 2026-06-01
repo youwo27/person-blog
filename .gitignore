@@ -1,0 +1,64 @@
+# ── Python ──────────────────────────────────────
+*.py[cod]
+__pycache__/
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+*.whl
+
+# ── Environment ─────────────────────────────────
+.env
+!.env.example
+.venv/
+venv/
+env/
+
+# ── Database ────────────────────────────────────
+*.sqlite3
+db.sqlite3
+
+# ── Static & Media ──────────────────────────────
+staticfiles/
+media/
+
+# ── IDE & Editor ────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ── Logs ────────────────────────────────────────
+*.log
+logs/
+
+# ── Coverage & Test ─────────────────────────────
+.coverage
+htmlcov/
+.coverage.*
+.pytest_cache/
+
+# ── Type Checking ───────────────────────────────
+.mypy_cache/
+.ruff_cache/
+.dmypy.json
+
+# ── Node (future frontend) ──────────────────────
+node_modules/
+frontend/dist/
+
+# ── Docker ──────────────────────────────────────
+postgres_data/
+redis_data/
+media_data/
+
+# ── Jupyter ─────────────────────────────────────
+*.ipynb_checkpoints/
+
+# ── Secrets ─────────────────────────────────────
+*.pem
+*.key
+*.crt
