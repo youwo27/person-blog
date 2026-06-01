@@ -89,7 +89,8 @@ def mask_sensitive_data(data: dict, fields: set | None = None) -> dict:
         fields = {"password", "token", "secret", "access", "refresh", "authorization", "api_key"}
     result = {}
     for key, value in data.items():
-        if key.lower() in fields:
+        key_lower = key.lower()
+        if key_lower in fields or any(f in key_lower for f in fields):
             result[key] = "[REDACTED]"
         elif isinstance(value, dict):
             result[key] = mask_sensitive_data(value, fields)
