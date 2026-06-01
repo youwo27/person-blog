@@ -13,6 +13,7 @@ from apps.blog.views import CategoryViewSet, PostViewSet, SiteSettingViewSet, Ta
 from apps.comments.views import CommentViewSet
 from apps.media_library.views import MediaViewSet
 from apps.notifications.views import NotificationViewSet
+from apps.search_index.views import search_posts, search_suggestions, trending_terms
 
 # ── Main Router ──────────────────────────────────
 router = DefaultRouter()
@@ -28,4 +29,8 @@ router.register(r"notifications", NotificationViewSet, basename="notification")
 urlpatterns = [
     path("", include(router.urls)),
     path("auth/", include("apps.accounts.urls")),
+    # Search
+    path("search/", search_posts, name="search-posts"),
+    path("search/suggest/", search_suggestions, name="search-suggestions"),
+    path("search/trending/", trending_terms, name="search-trending"),
 ]

@@ -334,6 +334,17 @@ class Post(models.Model):
         verbose_name="updated at",
     )
 
+    # ── Full-Text Search ──────────────────────────
+    # Stores concatenated title+content+excerpt for FTS.
+    # PostgreSQL GIN index on this field enables ranked full-text search.
+    # SQLite falls back to ILIKE for simple keyword matching.
+    search_vector = models.TextField(
+        blank=True,
+        default="",
+        editable=False,
+        verbose_name="search vector",
+    )
+
     objects = PostManager()
 
     class Meta:
@@ -392,6 +403,9 @@ class Post(models.Model):
         # Use the meta_title as default if not set
         if not self.meta_title:
             self.meta_title = self.title[:255]
+
+        # Update search_vector (title + content + excerpt concatenation)
+        self.search_vector = f"{self.title} {self.content} {self.excerpt}"
 
         super().save(*args, **kwargs)
 

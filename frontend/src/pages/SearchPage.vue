@@ -74,6 +74,7 @@
 import { ref, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { postsApi } from "@/api";
+import axios from "axios";
 import { useAppStore } from "@/stores/app";
 import type { Post } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb.vue";

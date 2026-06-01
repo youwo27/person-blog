@@ -1,1 +1,1 @@
-"""Search Index app — full-text search, suggestions, trending keywords."""
+"""Search index — PostgreSQL FTS + optional Elasticsearch."""

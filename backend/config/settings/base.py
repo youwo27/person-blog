@@ -594,3 +594,11 @@ CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
 CSP_IMG_SRC = ("'self'", "data:", "https:")
 CSP_FONT_SRC = ("'self'",)
 CSP_FRAME_ANCESTORS = ("'none'",)
+
+# ═══════════════════════════════════════════════════
+# Search Configuration
+# ═══════════════════════════════════════════════════
+# 'postgres' (default, built-in) or 'elasticsearch' (requires ES + elasticsearch-py)
+SEARCH_BACKEND = env.str("SEARCH_BACKEND", default="postgres")
+ES_HOST = env.str("ES_HOST", default="http://localhost:9200")
+ES_INDEX_NAME = env.str("ES_INDEX_NAME", default="blog_posts")
