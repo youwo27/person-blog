@@ -69,6 +69,9 @@
           </router-link>
         </div>
       </nav>
+
+      <!-- Comments -->
+      <CommentSection :post-id="post.id" :slug="post.slug" />
     </template>
 
     <!-- Empty / Not Found -->
@@ -85,6 +88,7 @@ import type { PostDetail } from "@/types";
 import Breadcrumb from "@/components/Breadcrumb.vue";
 import LoadingSpinner from "@/components/LoadingSpinner.vue";
 import EmptyState from "@/components/EmptyState.vue";
+import CommentSection from "@/components/CommentSection.vue";
 
 const route = useRoute();
 const store = useAppStore();

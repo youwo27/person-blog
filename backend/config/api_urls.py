@@ -12,6 +12,7 @@ from apps.accounts.views import SubscriberViewSet
 from apps.blog.views import CategoryViewSet, PostViewSet, SiteSettingViewSet, TagViewSet
 from apps.comments.views import CommentViewSet
 from apps.media_library.views import MediaViewSet
+from apps.notifications.views import NotificationViewSet
 
 # ── Main Router ──────────────────────────────────
 router = DefaultRouter()
@@ -22,6 +23,7 @@ router.register(r"comments", CommentViewSet, basename="comment")
 router.register(r"media", MediaViewSet, basename="media")
 router.register(r"settings", SiteSettingViewSet, basename="sitesetting")
 router.register(r"subscribers", SubscriberViewSet, basename="subscriber")
+router.register(r"notifications", NotificationViewSet, basename="notification")
 
 urlpatterns = [
     path("", include(router.urls)),
