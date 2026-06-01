@@ -94,6 +94,13 @@ class Media(models.Model):
         blank=True,
         verbose_name="alt text",
     )
+    # Thumbnails & WebP variants — stored as JSON
+    # {"thumbnail": {"path": "...", "width": 150, "height": 150}, "webp": {...}, ...}
+    thumbnails = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name="thumbnails",
+    )
     uploaded_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
